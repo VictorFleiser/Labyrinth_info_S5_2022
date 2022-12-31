@@ -19,6 +19,14 @@ typedef struct
 } tile;
 
 
+typedef struct
+{
+	int x;
+	int y;
+	int item;
+} t_player;
+
+
 /*
 //Chain array			NOT USED FOR NOW?
 typedef struct
@@ -180,7 +188,7 @@ int* testPathPlayerToGoal(tile * laby, int px, int py, int gx, int gy, int sizeX
 	return path;
 }
 
-int PlayMove(tile *laby, int px, int py, int gx, int gy, int sizeX, int sizeY)
+int PlayMove(tile *laby, int px, int py, int gx, int gy, int sizeX, int sizeY, tile *extern_tile, t_player *victor, t_player *opponent)
 {
 	printf("PlayMove launched\n");
 	int result;
@@ -194,10 +202,132 @@ int PlayMove(tile *laby, int px, int py, int gx, int gy, int sizeX, int sizeY)
 	free(path);
 	t_move move = {.insert = 0, .number = 5, .rotation = 3, .x = gx, .y = gy, .tileN = 1, .tileE = 0, .tileS = 0, .tileW = 0, .nextItem = 2};
 	
+	updateLaby(laby, move, sizeX, sizeY, extern_tile, victor, opponent);
+
 	result = sendMove(&move);
 	printf("%d\n",result);
 	return result;
 }
+
+//returns the equivalent index in a 1D array from the x and y coordinates of a 2D array
+int f2Dto1D(int xcoord, int ycoord, int sizeX)
+{
+	return (ycoord*sizeX+xcoord);
+}
+
+//returns the x coordinate in a 2D array from the index of a 1D array
+int f1Dto2Dx(int coord, int sizeX)
+{
+	return (coord%sizeX);
+}
+
+//returns the y coordinate in a 2D array from the index of a 1D array
+int f1Dto2Dy(int coord, int sizeX)
+{
+	return (coord/sizeX);
+}
+
+void rotateTile(tile * tileToRotate, int numberOfRotations)
+{
+	for (int i = 0; i < numberOfRotations; i++)
+	{
+		int tp = tileToRotate->tileN;
+		tileToRotate->tileN = tileToRotate->tileW;
+		tileToRotate->tileW = tileToRotate->tileS;
+		tileToRotate->tileS = tileToRotate->tileE;
+		tileToRotate->tileE = tp;
+	}
+}
+
+//copy tile contents of src to dest
+void copyTileContent(tile * dest, tile src)
+{
+	dest->tileItem = src.tileItem;
+	dest->tileN = src.tileN;
+	dest->tileE = src.tileE;
+	dest->tileS = src.tileS;
+	dest->tileW = src.tileW;
+}
+
+//Function updates the labyrinth (laby) with the move played in parameters (move), also updates the extern tile
+void updateLaby(tile *laby, t_move move, int sizeX, int sizeY, tile *extern_tile, t_player *activePlayer, t_player *passivPlayer)
+{
+	//rotating the extern tile
+	rotateTile(extern_tile, move.rotation);
+
+	//moving the tiles
+	switch (move.insert)
+	{
+	case 0 :												//insert line left
+		if (passivPlayer->y == move.number)					//test if the passiv player is on the left tile
+		{
+			passivPlayer->x = (passivPlayer->x + 1)%sizeX;								//move passive player 1 right
+		}
+		for (int i = f2Dto1D(sizeX-1, move.number, sizeX); i > f2Dto1D(0, move.number, sizeX); i--)		//go through all tiles of selected line (except first tile) in reverse order
+		{
+			//copy left tile
+			copyTileContent(&laby[i], laby[i-1]);
+		}
+		//adding the previous extern tile to board
+		copyTileContent(&laby[f2Dto1D(0, move.number, sizeX)], *extern_tile);
+		break;
+
+	case 1 :												//insert line right
+		if (passivPlayer->y == move.number)					//test if the passiv player is on the right tile
+		{
+			passivPlayer->x = (passivPlayer->x - 1)%sizeX;								//move passive player 1 left
+		}
+		for (int i = f2Dto1D(0, move.number, sizeX); i < f2Dto1D(sizeX - 1, move.number, sizeX); i++)	//go through all tiles of selected line (except last tile) in order
+		{
+			//copy right tile
+			copyTileContent(&laby[i], laby[i+1]);
+		}
+		//adding the previous extern tile to board
+		copyTileContent(&laby[f2Dto1D(sizeX - 1, move.number, sizeX)], *extern_tile);
+		break;	
+	case 2 :												//insert column top
+		if (passivPlayer->x == move.number)					//test if the passiv player is on the upward tile
+		{
+			passivPlayer->y = (passivPlayer->y + 1)%sizeY;								//move passive player 1 down
+		}
+		for (int i = f2Dto1D(move.number, sizeY - 1, sizeX); i > f2Dto1D(move.number, 0, sizeX); i = i - sizeX)		//go through all tiles of selected column (except first tile) in reverse order
+		{
+			//copy upward tile
+			copyTileContent(&laby[i], laby[i - sizeX]);
+		}
+		//adding the previous extern tile to board
+		copyTileContent(&laby[f2Dto1D(move.number, 0, sizeX)], *extern_tile);
+		break;
+	case 3 :												//insert column bottom
+		if (passivPlayer->x == move.number)					//test if the passiv player is on the downward tile
+		{
+			passivPlayer->y = (passivPlayer->y - 1)%sizeY;								//move passive player 1 up
+		}
+		for (int i = f2Dto1D(move.number, 0, sizeX); i < f2Dto1D(move.number, sizeY - 1, sizeX); i = i + sizeX)		//go through all tiles of selected column (except last tile) in order
+		{
+			//copy downward tile
+			copyTileContent(&laby[i], laby[i + sizeX]);
+		}
+		//adding the previous extern tile to board
+		copyTileContent(&laby[f2Dto1D(move.number, sizeY - 1, sizeX)], *extern_tile);
+		break;
+	default:												//Should never happen
+		printf("move insert value impossible !!!!!\n");
+		break;
+	}
+
+	//saving the new extern tile
+	extern_tile->tileItem = move.tileItem;
+	extern_tile->tileN = move.tileN;
+	extern_tile->tileE = move.tileE;
+	extern_tile->tileS = move.tileS;
+	extern_tile->tileW = move.tileW;
+	
+	//updating active player
+	activePlayer->x = move.x;
+	activePlayer->y = move.y;
+	activePlayer->item = move.nextItem;
+	}
 
 
 int main(void)
@@ -209,7 +339,7 @@ int main(void)
 
 	int sizeX;		//labyrinth size
 	int sizeY;		//labyrinth size
-	int playerX = 0, playerY = 0;
+
 	char name[50] = "test";
 
 	printf("waiting for labyrinth :");
@@ -221,10 +351,34 @@ int main(void)
 	//external tile declaration :
 	tile extern_tile = {.x = -1, .y = -1, .tileN = 0, .tileE = 0, .tileS = 0, .tileW = 0, .tileItem = 0};
 
-	//getting labyrinth :	returns turn (0 = player, 1 = opponent)
+	//getting labyrinth :	returns turn (0 = victor, 1 = opponent)
 	printf("getting labyrinth :");
 	int turn = getLabyrinth(LabyrinthReceivedTab, &extern_tile.tileN, &extern_tile.tileE, &extern_tile.tileS, &extern_tile.tileW, &extern_tile.tileItem);
 	printf(" success\n");
+
+	//declaring players :
+	t_player victor;
+	t_player opponent;
+	if (turn == 0)	//turn victor
+	{
+		victor.x = 0;
+		victor.y = 0;
+		victor.item = 1;
+		opponent.x = sizeX - 1;
+		opponent.y = sizeY - 1;
+		opponent.item = 24;
+	}
+	else			//turn opponent
+	{
+		opponent.x = 0;
+		opponent.y = 0;
+		opponent.item = 1;
+		victor.x = sizeX - 1;
+		victor.y = sizeY - 1;
+		victor.item = 24;
+	}
+
+	int playerX = 0, playerY = 0;
 
 	//initializing labyrinth
 	tile Laby[sizeY*sizeX];
@@ -252,9 +406,9 @@ int main(void)
 		{
 			int xdest = 7;
 			int ydest = 7;
-//			scanf("%d%d",&xdest,&ydest);
+			scanf("%d%d",&xdest,&ydest);
 			printf("our turn, launching PlayMove\n");
-			int playMoveResult = PlayMove(Laby, playerX, playerY, xdest, ydest, sizeX, sizeY);
+			int playMoveResult = PlayMove(Laby, playerX, playerY, xdest, ydest, sizeX, sizeY, &extern_tile, &victor, &opponent);
 			printf("playmove result = %d\n",playMoveResult);
 			if(playMoveResult == -1)
 			{
@@ -294,9 +448,6 @@ int main(void)
 Strategy
 if win in 1 :
 	test for most disadventagous move for opponent
-
 else :
 	search path to closest to goal while disadventagous move for opponent
-
-
 */
