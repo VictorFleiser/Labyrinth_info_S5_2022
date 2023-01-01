@@ -430,6 +430,26 @@ void cpyBoard(tile *dest, tile *src, int sizeX, int sizeY)
 	}
 }
 
+//function finds the goal coordinates and saves them in xGoal and yGoal, returns 0 if the goal is in the extern tile and 1 otherwise
+int findCoordsGoal(tile *laby, int sizeX, int sizeY, int goal, int *xGoal, int *yGoal, tile externTile)
+{
+	if (externTile.tileItem == goal)
+	{
+		return 0;
+	}	
+	for (int i = 0; i < sizeX*sizeY; i++)
+	{
+		if (laby[i].tileItem == goal)
+		{
+			*xGoal = f1Dto2Dx(i, sizeX);
+			*yGoal = f1Dto2Dy(i, sizeX);
+			return 1;
+		}
+	}
+	printf("\nERROR : goal not found!!! (returning the same as if goal on extern tile)\n");
+	return 0;
+}
+
 t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_player activPlayer)
 {
 	//Creating a new board with the contents of laby
@@ -438,7 +458,9 @@ t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_playe
 
 	t_possibleMove bestMove = {.activPlayerDist = 999};		//declared with an impossibly high best distance found to be replaced at first iteration
 	t_possibleMove cMove;									//current move being tested
-	t_move moveToTest;
+	t_move moveToTest = {.tileItem = externTile.tileItem, .tileN = externTile.tileN, .tileE = externTile.tileE, .tileS = externTile.tileS, .tileW = externTile.tileW};
+	int currentGoalX;
+	int currentGoalY;
 
 	for (int i = 0; i < 4; i++)							//Insert
 	{
@@ -455,9 +477,17 @@ t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_playe
 					cMove.number = n;
 					moveToTest.number = n;
 
-					updateLaby(nLaby, i, n, r, sizeX, sizeY, externTile)
+					//modify nLaby with tested move
+					updateLaby(nLaby, i, n, r, sizeX, sizeY, externTile);
 
-					findCoordsGoal(, activPlayer.item);
+					//find position of new goal, only enters if goal is found on the board
+					if(findCoordsGoal(nLaby, sizeX, sizeY, activPlayer.item, &currentGoalX, &currentGoalY, externTile))
+					{
+
+					}
+
+					//Reset the nLaby
+					cpyBoard(nLaby, laby, sizeX, sizeY);
 				}
 			}
 			else
