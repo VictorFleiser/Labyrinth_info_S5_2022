@@ -89,7 +89,7 @@ void updateGame(tile *laby, t_move move, int sizeX, int sizeY, tile *extern_tile
 	switch (move.insert)
 	{
 	case 0 :												//insert line left
-		if (passivPlayer->y == move.number)					//test if the passiv player is on the left tile
+		if (passivPlayer->y == move.number)					//test if the passiv player is on the line
 		{
 			passivPlayer->x = (passivPlayer->x + 1)%sizeX;								//move passive player 1 right
 		}
@@ -103,7 +103,7 @@ void updateGame(tile *laby, t_move move, int sizeX, int sizeY, tile *extern_tile
 		break;
 
 	case 1 :												//insert line right
-		if (passivPlayer->y == move.number)					//test if the passiv player is on the right tile
+		if (passivPlayer->y == move.number)					//test if the passiv player is on the line
 		{
 			passivPlayer->x = (passivPlayer->x - 1)%sizeX;								//move passive player 1 left
 		}
@@ -116,7 +116,7 @@ void updateGame(tile *laby, t_move move, int sizeX, int sizeY, tile *extern_tile
 		copyTileContent(&laby[f2Dto1D(sizeX - 1, move.number, sizeX)], *extern_tile);
 		break;	
 	case 2 :												//insert column top
-		if (passivPlayer->x == move.number)					//test if the passiv player is on the upward tile
+		if (passivPlayer->x == move.number)					//test if the passiv player is on the column
 		{
 			passivPlayer->y = (passivPlayer->y + 1)%sizeY;								//move passive player 1 down
 		}
@@ -129,7 +129,7 @@ void updateGame(tile *laby, t_move move, int sizeX, int sizeY, tile *extern_tile
 		copyTileContent(&laby[f2Dto1D(move.number, 0, sizeX)], *extern_tile);
 		break;
 	case 3 :												//insert column bottom
-		if (passivPlayer->x == move.number)					//test if the passiv player is on the downward tile
+		if (passivPlayer->x == move.number)					//test if the passiv player is on the column
 		{
 			passivPlayer->y = (passivPlayer->y - 1)%sizeY;								//move passive player 1 up
 		}
@@ -160,7 +160,7 @@ void updateGame(tile *laby, t_move move, int sizeX, int sizeY, tile *extern_tile
 }
 
 //Function updates the labyrinth (laby) with the move represented by the parameters
-void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int sizeY, tile extern_tile)
+void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int sizeY, tile extern_tile, t_player *activePlayer, t_player *passivePlayer)
 {
 	//rotating the extern tile
 	rotateTile(&extern_tile, rotation);
@@ -168,7 +168,15 @@ void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int
 	//moving the tiles
 	switch (insert)
 	{
-	case 0 :												//insert line left
+	case 0 :													//insert line left
+		if (activePlayer->y == number)							//test if the active player is on the line
+		{
+			activePlayer->x = (activePlayer->x + 1)%sizeX;		//move active player 1 right
+		}
+		if (passivePlayer->y == number)							//test if the passive player is on the line
+		{
+			passivePlayer->x = (passivePlayer->x + 1)%sizeX;	//move passive player 1 right
+		}
 		for (int i = f2Dto1D(sizeX-1, number, sizeX); i > f2Dto1D(0, number, sizeX); i--)		//go through all tiles of selected line (except first tile) in reverse order
 		{
 			//copy left tile
@@ -178,7 +186,15 @@ void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int
 		copyTileContent(&laby[f2Dto1D(0, number, sizeX)], extern_tile);
 		break;
 
-	case 1 :												//insert line right
+	case 1 :													//insert line right
+		if (activePlayer->y == number)							//test if the active player is on the line
+		{
+			activePlayer->x = (activePlayer->x - 1)%sizeX;		//move active player 1 left
+		}
+		if (passivePlayer->y == number)							//test if the passive player is on the line
+		{
+			passivePlayer->x = (passivePlayer->x - 1)%sizeX;	//move passive player 1 left
+		}
 		for (int i = f2Dto1D(0, number, sizeX); i < f2Dto1D(sizeX - 1, number, sizeX); i++)	//go through all tiles of selected line (except last tile) in order
 		{
 			//copy right tile
@@ -187,7 +203,15 @@ void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int
 		//adding the previous extern tile to board
 		copyTileContent(&laby[f2Dto1D(sizeX - 1, number, sizeX)], extern_tile);
 		break;	
-	case 2 :												//insert column top
+	case 2 :													//insert column top
+		if (activePlayer->x == number)							//test if the active player is on the column
+		{
+			activePlayer->y = (activePlayer->y + 1)%sizeY;		//move active player 1 down
+		}
+		if (passivePlayer->x == number)							//test if the passive player is on the column
+		{
+			passivePlayer->y = (passivePlayer->y + 1)%sizeY;	//move passive player 1 down
+		}
 		for (int i = f2Dto1D(number, sizeY - 1, sizeX); i > f2Dto1D(number, 0, sizeX); i = i - sizeX)		//go through all tiles of selected column (except first tile) in reverse order
 		{
 			//copy upward tile
@@ -196,7 +220,15 @@ void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int
 		//adding the previous extern tile to board
 		copyTileContent(&laby[f2Dto1D(number, 0, sizeX)], extern_tile);
 		break;
-	case 3 :												//insert column bottom
+	case 3 :													//insert column bottom
+		if (activePlayer->x == number)							//test if the active player is on the column
+		{
+			activePlayer->y = (activePlayer->y - 1)%sizeY;		//move active player 1 up
+		}
+		if (passivePlayer->x == number)							//test if the passive player is on the column
+		{
+			passivePlayer->y = (passivePlayer->y - 1)%sizeY;	//move passive player 1 up
+		}
 		for (int i = f2Dto1D(number, 0, sizeX); i < f2Dto1D(number, sizeY - 1, sizeX); i = i + sizeX)		//go through all tiles of selected column (except last tile) in order
 		{
 			//copy downward tile
@@ -373,6 +405,99 @@ int* testPathPlayerToGoal(tile * laby, int px, int py, int gx, int gy, int sizeX
 	return path;
 }
 
+//returns the distance between 2 tiles (diagonals count as 2)
+int calcDist(int px, int py, int gx, int gy)
+{
+	return (abs(px - gx) + abs(py - gy));
+}
+
+//function marks the distance of the tile (tileX ; tileY) to goal and recursively launches the function again on the available unmarked tiles adjacent
+void recursivelyMarkDistance(tile *laby, int tileX, int tileY, int gx, int gy, int sizeX, int sizeY, int *distance) 
+{
+	//mark distance of current tile
+	distance[f2Dto1D(tileX, tileY, sizeX)] = calcDist(tileX, tileY, gx, gy);
+
+	//recursively try north path :
+	if (0 <= (tileY - 1) && laby[f2Dto1D(tileX, tileY, sizeX)].tileN == 0)	//test if north tile exists and there isn't a north wall on our tile
+	{
+		if (laby[f2Dto1D(tileX, tileY - 1, sizeX)].tileS == 0 && distance[f2Dto1D(tileX, tileY - 1, sizeX)] == 999)	//test if north tile doesn't have a south wall and the distance count is still 999 on that tile
+		{
+			recursivelyMarkDistance(laby, tileX, tileY-1, gx, gy, sizeX, sizeY, distance);
+		}
+	}
+	//recursively try east path :
+	if (sizeX > (tileX + 1) && laby[f2Dto1D(tileX, tileY, sizeX)].tileE == 0)	//test if east tile exists and there isn't a east wall on our tile
+	{
+		if (laby[f2Dto1D(tileX + 1, tileY, sizeX)].tileW == 0 && distance[f2Dto1D(tileX + 1, tileY, sizeX)] == -1)	//test if east tile doesn't have a south wall and the distance count is still 999 on that tile
+		{
+			recursivelyMarkDistance(laby, tileX+1, tileY, gx, gy, sizeX, sizeY, distance);
+		}
+	}
+	//recursively try south path :
+	if (sizeY > (tileY + 1) && laby[f2Dto1D(tileX, tileY, sizeX)].tileS == 0)	//test if south tile exists and there isn't a south wall on our tile
+	{
+		if (laby[f2Dto1D(tileX, tileY + 1, sizeX)].tileN == 0 && distance[f2Dto1D(tileX, tileY + 1, sizeX)] == -1)	//test if south tile doesn't have a south wall and the distance count is still 999 on that tile
+		{
+			recursivelyMarkDistance(laby, tileX, tileY+1, gx, gy, sizeX, sizeY, distance);
+		}
+	}
+	//recursively try west path :
+	if (0 <= (tileX - 1) && laby[f2Dto1D(tileX, tileY, sizeX)].tileW == 0)	//test if west tile exists and there isn't a west wall on our tile
+	{
+		if (laby[f2Dto1D(tileX - 1, tileY, sizeX)].tileE == 0 && distance[f2Dto1D(tileX - 1, tileY, sizeX)] == -1)	//test if west tile doesn't have a south wall and the distance count is still 999 on that tile
+		{
+			recursivelyMarkDistance(laby, tileX-1, tileY, gx, gy, sizeX, sizeY, distance);
+		}
+	}
+}
+
+//Function to test if a path is available From Player coordinate to goal coordinates, returns the minimum distance to the goal from the best destination found (also saved in destX and destY)
+int testPathPlayerToGoalV2(tile * laby, int px, int py, int gx, int gy, int *destX, int *destY, int sizeX, int sizeY)
+{
+	//creation of an array with the distance from the goal, initialize all values at 999
+	int distance[sizeY*sizeX];
+	for (int i = 0; i < sizeX*sizeY; i++)
+	{
+		distance[i] = 999;
+	}
+
+	//mark recursively distance :
+	recursivelyMarkDistance(laby, px, py, gx, gy, sizeX, sizeY, distance);
+
+/*	//FOR TESTING
+	printf("Distance array :\n");
+	for (int i = 0; i < sizeY; i++)
+	{
+		for (int j = 0; j < sizeX; j++)
+		{
+			printf("%d\t",distance[f2Dto1D(j, i, sizeX)]);
+		}
+		printf("\n");
+	}
+*/
+
+	//searching best distance found
+	int bestDistanceFound = 999;
+	int bestXFound;
+	int bestYFound;
+	for (int i = 0; i < sizeY; i++)
+	{
+		for (int j = 0; j < sizeX; j++)
+		{
+			if (distance[f2Dto1D(j, i, sizeX)] < bestDistanceFound)
+			{
+				//new best movement tile found
+				bestDistanceFound = distance[f2Dto1D(j, i, sizeX)];
+				bestXFound = j;
+				bestYFound = i;
+			}
+		}
+	}
+	*destX = bestXFound;
+	*destY = bestYFound;
+	return bestDistanceFound;
+}
+
 int PlayMove(tile *laby, t_player *victor, int gx, int gy, int sizeX, int sizeY, tile *extern_tile, t_player *opponent)
 {
 	printf("PlayMove launched\n");
@@ -450,7 +575,8 @@ int findCoordsGoal(tile *laby, int sizeX, int sizeY, int goal, int *xGoal, int *
 	return 0;
 }
 
-t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_player activPlayer)
+//returns the best move found (DOES NOT RETURN THE CORRECT tileN, tileE, tileS, tileW, tileItem, nextItem)
+t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_player activPlayer, t_player passivPlayer)
 {
 	//Creating a new board with the contents of laby
 	tile nLaby[sizeY*sizeX];
@@ -461,6 +587,8 @@ t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_playe
 	t_move moveToTest = {.tileItem = externTile.tileItem, .tileN = externTile.tileN, .tileE = externTile.tileE, .tileS = externTile.tileS, .tileW = externTile.tileW};
 	int currentGoalX;
 	int currentGoalY;
+	t_player currentActivPlayer = activPlayer;
+	t_player currentPassivPlayer = passivPlayer;
 
 	for (int i = 0; i < 4; i++)							//Insert
 	{
@@ -478,29 +606,71 @@ t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_playe
 					moveToTest.number = n;
 
 					//modify nLaby with tested move
-					updateLaby(nLaby, i, n, r, sizeX, sizeY, externTile);
+					updateLaby(nLaby, i, n, r, sizeX, sizeY, externTile, &currentActivPlayer, &currentPassivPlayer);
 
 					//find position of new goal, only enters if goal is found on the board
 					if(findCoordsGoal(nLaby, sizeX, sizeY, activPlayer.item, &currentGoalX, &currentGoalY, externTile))
 					{
-
+						cMove.activPlayerDist = testPathPlayerToGoalV2(nLaby, currentActivPlayer.x, currentActivPlayer.y, currentGoalX, currentGoalY, &cMove.activPlayerX, &cMove.activPlayerY, sizeX, sizeY);
 					}
 
-					//Reset the nLaby
+					//test if current move better than best move found so far :
+					if (cMove.activPlayerDist < bestMove.activPlayerDist)
+					{
+						bestMove = cMove;
+					}
+
+					//Reset the labyrinth :
 					cpyBoard(nLaby, laby, sizeX, sizeY);
+					currentActivPlayer = activPlayer;
+					currentPassivPlayer = passivPlayer;
+					cMove.activPlayerDist = 999;
 				}
 			}
 			else
 			{
 				for (int n = 1; n < sizeY; n = n + 2)	//Number
-				{
-					/* code */
+				{														//CODE EXACTLY THE SAME AS ABOVE
+					cMove.number = n;
+					moveToTest.number = n;
+
+					//modify nLaby with tested move
+					updateLaby(nLaby, i, n, r, sizeX, sizeY, externTile, &currentActivPlayer, &currentPassivPlayer);
+
+					//find position of new goal, only enters if goal is found on the board
+					if(findCoordsGoal(nLaby, sizeX, sizeY, activPlayer.item, &currentGoalX, &currentGoalY, externTile))
+					{
+						cMove.activPlayerDist = testPathPlayerToGoalV2(nLaby, currentActivPlayer.x, currentActivPlayer.y, currentGoalX, currentGoalY, &cMove.activPlayerX, &cMove.activPlayerY, sizeX, sizeY);
+					}
+
+					//test if current move better than best move found so far :
+					if (cMove.activPlayerDist < bestMove.activPlayerDist)
+					{
+						bestMove = cMove;
+					}
+
+					//Reset the labyrinth :
+					cpyBoard(nLaby, laby, sizeX, sizeY);
+					currentActivPlayer = activPlayer;
+					currentPassivPlayer = passivPlayer;
+					cMove.activPlayerDist = 999;
 				}
 			}			
 		}
 	}
 	
+	//translating bestMove into an actual t_move
+	t_move returnMove = {.insert = bestMove.insert, .number = bestMove.number, .rotation = bestMove.rotation, .x = bestMove.activPlayerX, .y = bestMove.activPlayerY};	//extern tile not done, same with goal
 
+			//DOES NOT RETURN THE CORRECT tileN, tileE, tileS, tileW, tileItem, nextItem
+	return returnMove;
+}
+
+//
+int playMoveV2()
+{
+	findBestMoveV1();
+	return 0;
 }
 
 int main(void)
