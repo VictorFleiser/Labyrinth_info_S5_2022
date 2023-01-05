@@ -91,7 +91,7 @@ void updateGame(tile *laby, t_move move, int sizeX, int sizeY, tile *extern_tile
 	case 0 :												//insert line left
 		if (passivPlayer->y == move.number)					//test if the passiv player is on the line
 		{
-			passivPlayer->x = (passivPlayer->x + 1)%sizeX;								//move passive player 1 right
+			passivPlayer->x = ((passivPlayer->x + 1)%sizeX + sizeX) % sizeX;								//move passive player 1 right
 		}
 		for (int i = f2Dto1D(sizeX-1, move.number, sizeX); i > f2Dto1D(0, move.number, sizeX); i--)		//go through all tiles of selected line (except first tile) in reverse order
 		{
@@ -105,7 +105,7 @@ void updateGame(tile *laby, t_move move, int sizeX, int sizeY, tile *extern_tile
 	case 1 :												//insert line right
 		if (passivPlayer->y == move.number)					//test if the passiv player is on the line
 		{
-			passivPlayer->x = (passivPlayer->x - 1)%sizeX;								//move passive player 1 left
+			passivPlayer->x = ((passivPlayer->x - 1)%sizeX + sizeX) % sizeX;								//move passive player 1 left
 		}
 		for (int i = f2Dto1D(0, move.number, sizeX); i < f2Dto1D(sizeX - 1, move.number, sizeX); i++)	//go through all tiles of selected line (except last tile) in order
 		{
@@ -118,7 +118,7 @@ void updateGame(tile *laby, t_move move, int sizeX, int sizeY, tile *extern_tile
 	case 2 :												//insert column top
 		if (passivPlayer->x == move.number)					//test if the passiv player is on the column
 		{
-			passivPlayer->y = (passivPlayer->y + 1)%sizeY;								//move passive player 1 down
+			passivPlayer->y = ((passivPlayer->y + 1)%sizeY + sizeY) % sizeY;								//move passive player 1 down
 		}
 		for (int i = f2Dto1D(move.number, sizeY - 1, sizeX); i > f2Dto1D(move.number, 0, sizeX); i = i - sizeX)		//go through all tiles of selected column (except first tile) in reverse order
 		{
@@ -131,7 +131,7 @@ void updateGame(tile *laby, t_move move, int sizeX, int sizeY, tile *extern_tile
 	case 3 :												//insert column bottom
 		if (passivPlayer->x == move.number)					//test if the passiv player is on the column
 		{
-			passivPlayer->y = (passivPlayer->y - 1)%sizeY;								//move passive player 1 up
+			passivPlayer->y = ((passivPlayer->y - 1)%sizeY + sizeY) % sizeY;								//move passive player 1 up
 		}
 		for (int i = f2Dto1D(move.number, 0, sizeX); i < f2Dto1D(move.number, sizeY - 1, sizeX); i = i + sizeX)		//go through all tiles of selected column (except last tile) in order
 		{
@@ -171,11 +171,11 @@ void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int
 	case 0 :													//insert line left
 		if (activePlayer->y == number)							//test if the active player is on the line
 		{
-			activePlayer->x = (activePlayer->x + 1)%sizeX;		//move active player 1 right
+			activePlayer->x = ((activePlayer->x + 1) % sizeX + sizeX) % sizeX;		//move active player 1 right
 		}
 		if (passivePlayer->y == number)							//test if the passive player is on the line
 		{
-			passivePlayer->x = (passivePlayer->x + 1)%sizeX;	//move passive player 1 right
+			passivePlayer->x = ((passivePlayer->x + 1)%sizeX + sizeX) % sizeX;	//move passive player 1 right
 		}
 		for (int i = f2Dto1D(sizeX-1, number, sizeX); i > f2Dto1D(0, number, sizeX); i--)		//go through all tiles of selected line (except first tile) in reverse order
 		{
@@ -189,11 +189,11 @@ void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int
 	case 1 :													//insert line right
 		if (activePlayer->y == number)							//test if the active player is on the line
 		{
-			activePlayer->x = (activePlayer->x - 1)%sizeX;		//move active player 1 left
+			activePlayer->x = ((activePlayer->x - 1)%sizeX + sizeX) % sizeX;		//move active player 1 left
 		}
 		if (passivePlayer->y == number)							//test if the passive player is on the line
 		{
-			passivePlayer->x = (passivePlayer->x - 1)%sizeX;	//move passive player 1 left
+			passivePlayer->x = ((passivePlayer->x - 1)%sizeX + sizeX) % sizeX;	//move passive player 1 left
 		}
 		for (int i = f2Dto1D(0, number, sizeX); i < f2Dto1D(sizeX - 1, number, sizeX); i++)	//go through all tiles of selected line (except last tile) in order
 		{
@@ -206,11 +206,11 @@ void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int
 	case 2 :													//insert column top
 		if (activePlayer->x == number)							//test if the active player is on the column
 		{
-			activePlayer->y = (activePlayer->y + 1)%sizeY;		//move active player 1 down
+			activePlayer->y = ((activePlayer->y + 1)%sizeY + sizeY) % sizeY;		//move active player 1 down
 		}
 		if (passivePlayer->x == number)							//test if the passive player is on the column
 		{
-			passivePlayer->y = (passivePlayer->y + 1)%sizeY;	//move passive player 1 down
+			passivePlayer->y = ((passivePlayer->y + 1)%sizeY + sizeY) % sizeY;	//move passive player 1 down
 		}
 		for (int i = f2Dto1D(number, sizeY - 1, sizeX); i > f2Dto1D(number, 0, sizeX); i = i - sizeX)		//go through all tiles of selected column (except first tile) in reverse order
 		{
@@ -223,11 +223,11 @@ void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int
 	case 3 :													//insert column bottom
 		if (activePlayer->x == number)							//test if the active player is on the column
 		{
-			activePlayer->y = (activePlayer->y - 1)%sizeY;		//move active player 1 up
+			activePlayer->y = ((activePlayer->y - 1)%sizeY + sizeY) % sizeY;		//move active player 1 up
 		}
 		if (passivePlayer->x == number)							//test if the passive player is on the column
 		{
-			passivePlayer->y = (passivePlayer->y - 1)%sizeY;	//move passive player 1 up
+			passivePlayer->y = ((passivePlayer->y - 1)%sizeY + sizeY) % sizeY;	//move passive player 1 up
 		}
 		for (int i = f2Dto1D(number, 0, sizeX); i < f2Dto1D(number, sizeY - 1, sizeX); i = i + sizeX)		//go through all tiles of selected column (except last tile) in order
 		{
