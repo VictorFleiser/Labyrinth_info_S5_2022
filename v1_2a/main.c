@@ -5,8 +5,6 @@
 
 
 
-
-
 typedef struct
 {
 	int x;
@@ -26,19 +24,6 @@ typedef struct
 	int item;
 } t_player;
 
-
-/*
-//Chain array			NOT USED FOR NOW?
-typedef struct
-{
-	int value;
-	ArrayNode nextNode;
-} ArrayNode;
-*/
-
-
-
-
 //returns the equivalent index in a 1D array from the x and y coordinates of a 2D array
 int f2Dto1D(int xcoord, int ycoord, int sizeX)
 {
@@ -57,6 +42,7 @@ int f1Dto2Dy(int coord, int sizeX)
 	return (coord/sizeX);
 }
 
+//Function rotates the tileToRotate by numberOfRotations clockwise
 void rotateTile(tile * tileToRotate, int numberOfRotations)
 {
 	for (int i = 0; i < numberOfRotations; i++)
@@ -299,6 +285,7 @@ void recursivelyMarkSteps(tile *laby, int tileX, int tileY, int gx, int gy, int 
 }
 
 
+//FUNCTION NO LONGER USED
 
 //function recursively adds the direction values to the path array based on the steps array to go from the player (step = 0) to the current tile (tileX ; tileY) (normally the goal tile on the first iteration)
 //tileX and tileY are the coordinates of the current tile to test
@@ -351,7 +338,7 @@ void recursivelyAddPathValuesFromSteps(int tileX, int tileY, int sizeX, int size
 	}
 }
 
-/*
+/*		FUNCTION NO LONGER USED
 Function to test if a path is available From Player to current goal
 If not : returns null adress?
 If yes : allocates an array with the moves of the first path found, array starts with the array's length : returns the adress of the array
@@ -465,18 +452,6 @@ int testPathPlayerToGoalV2(tile * laby, int px, int py, int gx, int gy, int *des
 	//mark recursively distance :
 	recursivelyMarkDistance(laby, px, py, gx, gy, sizeX, sizeY, distance);
 
-/*	//FOR TESTING
-	printf("Distance array :\n");
-	for (int i = 0; i < sizeY; i++)
-	{
-		for (int j = 0; j < sizeX; j++)
-		{
-			printf("%d\t",distance[f2Dto1D(j, i, sizeX)]);
-		}
-		printf("\n");
-	}
-*/
-
 	//searching best distance found
 	int bestDistanceFound = 999;
 	int bestXFound;
@@ -500,6 +475,7 @@ int testPathPlayerToGoalV2(tile * laby, int px, int py, int gx, int gy, int *des
 	return bestDistanceFound;
 }
 
+//FUNCTION NO LONGER USED (see PlayMoveV2 for new version)
 int PlayMove(tile *laby, t_player *victor, int gx, int gy, int sizeX, int sizeY, tile *extern_tile, t_player *opponent)
 {
 	printf("PlayMove launched\n");
@@ -560,10 +536,6 @@ void cpyBoard(tile *dest, tile *src, int sizeX, int sizeY)
 //function finds the goal coordinates and saves them in xGoal and yGoal, returns 0 if the goal is in the extern tile and 1 otherwise
 int findCoordsGoal(tile *laby, int sizeX, int sizeY, int goal, int *xGoal, int *yGoal, tile externTile)
 {
-	if (externTile.tileItem == goal)
-	{
-		return 0;
-	}	
 	for (int i = 0; i < sizeX*sizeY; i++)
 	{
 		if (laby[i].tileItem == goal)
@@ -573,6 +545,10 @@ int findCoordsGoal(tile *laby, int sizeX, int sizeY, int goal, int *xGoal, int *
 			return 1;
 		}
 	}
+	if (externTile.tileItem == goal)
+	{
+		return 0;
+	}	
 	printf("\nERROR : goal not found!!! (returning the same as if goal on extern tile)\n");
 	return 0;
 }
@@ -588,27 +564,23 @@ t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_playe
 	t_possibleMove bestMove = {.activPlayerDist = 999};		//declared with an impossibly high best distance found to be replaced at first iteration
 	t_possibleMove cMove;									//current move being tested
 	t_move moveToTest = {.tileItem = externTile.tileItem, .tileN = externTile.tileN, .tileE = externTile.tileE, .tileS = externTile.tileS, .tileW = externTile.tileW};
-	int currentGoalX;
-	int currentGoalY;
+	int currentGoalX = activPlayer.x;
+	int currentGoalY = activPlayer.y;
 	t_player currentActivPlayer = activPlayer;
 	t_player currentPassivPlayer = passivPlayer;
 
-//	printf("FindBestMoveV1 Loops starting :\n");
 	for (int i = 0; i < 4; i++)							//Insert
 	{
-//		printf("InsertLoop : %d\n",i);
 		cMove.insert = i;
 		moveToTest.insert = i;
 		for (int r = 0; r < 4; r++)						//Rotation
 		{
-//			printf("RotationLoop : %d\n",r);
 			cMove.rotation = r;
 			moveToTest.rotation = r;
 			if (i < 2)
 			{
 				for (int n = 1; n < sizeY; n = n + 2)	//Number
 				{
-//					printf("NumberLoop : %d\n",n);
 					cMove.number = n;
 					moveToTest.number = n;
 
@@ -625,16 +597,10 @@ t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_playe
 							cMove.activPlayerDist = testPathPlayerToGoalV2(nLaby, currentActivPlayer.x, currentActivPlayer.y, currentGoalX, currentGoalY, &cMove.activPlayerX, &cMove.activPlayerY, sizeX, sizeY);
 						}
 
-//						printf("testPathPlayerToGoalV2 : dist = %d\n", cMove.activPlayerDist);
-
-
 						//test if current move better than best move found so far :
 						if (cMove.activPlayerDist < bestMove.activPlayerDist)
 						{
-//							printf("\nnew best move found\n\n");
 							bestMove = cMove;
-//							printf("insert = %d\nnumber = %d\nrotation = %d\nx = %d\ny = %d\ndist = %d\n", cMove.insert, cMove.number, cMove.rotation, cMove.activPlayerX, cMove.activPlayerY, cMove.activPlayerDist);
-
 						}
 					}
 
@@ -650,7 +616,6 @@ t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_playe
 			{
 				for (int n = 1; n < sizeX; n = n + 2)	//Number
 				{														//CODE EXACTLY THE SAME AS ABOVE
-//					printf("NumberLoop : %d\n",n);
 					cMove.number = n;
 					moveToTest.number = n;
 
@@ -663,20 +628,13 @@ t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_playe
 						//find position of new goal, only enters if goal is found on the board
 						if(findCoordsGoal(nLaby, sizeX, sizeY, activPlayer.item, &currentGoalX, &currentGoalY, cExternTile))
 						{
-//							printf("goal pos : %d, %d\n", currentGoalX, currentGoalY);
 							cMove.activPlayerDist = testPathPlayerToGoalV2(nLaby, currentActivPlayer.x, currentActivPlayer.y, currentGoalX, currentGoalY, &cMove.activPlayerX, &cMove.activPlayerY, sizeX, sizeY);
 						}
-
-//						printf("testPathPlayerToGoalV2 : dist = %d\n", cMove.activPlayerDist);
-
 
 						//test if current move better than best move found so far :
 						if (cMove.activPlayerDist < bestMove.activPlayerDist)
 						{
-//							printf("\nnew best move found\n\n");
 							bestMove = cMove;
-//							printf("insert = %d\nnumber = %d\nrotation = %d\nx = %d\ny = %d\ndist = %d\n", cMove.insert, cMove.number, cMove.rotation, cMove.activPlayerX, cMove.activPlayerY, cMove.activPlayerDist);
-
 						}
 					}
 
@@ -693,34 +651,21 @@ t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_playe
 	
 	//translating bestMove into an actual t_move
 	t_move returnMove = {.insert = bestMove.insert, .number = bestMove.number, .rotation = bestMove.rotation, .x = bestMove.activPlayerX, .y = bestMove.activPlayerY, .tileItem = externTile.tileItem, .tileN = externTile.tileN, .tileE = externTile.tileE, .tileS = externTile.tileS, .tileW = externTile.tileW};	//extern tile is the same as the initial one, same with goal
-
-			//DOES NOT RETURN THE CORRECT tileN, tileE, tileS, tileW, tileItem, nextItem
 	return returnMove;
 }
 
 //
 int playMoveV2(tile *laby, int sizeX, int sizeY, tile * externTile, t_player * activPlayer, t_player * passivPlayer, t_move previous_move)
 {
-
-	printf("tests (playMoveV2) : extern tile = %d %d %d %d %d\n", externTile->tileItem, externTile->tileN, externTile->tileE, externTile->tileS, externTile->tileW);
+	//finding move to play
 	t_move MoveToPlay;
-//	printf("finding best move...\n");
 	MoveToPlay = findBestMoveV1(laby, sizeX, sizeY, *externTile, *activPlayer, *passivPlayer, previous_move);
-	printf("Move found :\ninsert type : %d\nnumber : %d\nrotation : %d\nx : %d\ny : %d\n\n",MoveToPlay.insert, MoveToPlay.number, MoveToPlay.rotation, MoveToPlay.x, MoveToPlay.y);
-
-	printf("tests (findBestMoveV1) : extern tile = %d %d %d %d %d\n", externTile->tileItem, externTile->tileN, externTile->tileE, externTile->tileS, externTile->tileW);
-	printf("tests (findBestMoveV1) : extern tile = %d %d %d %d %d\n", MoveToPlay.tileItem, MoveToPlay.tileN, MoveToPlay.tileE, MoveToPlay.tileS, MoveToPlay.tileW);
 
 	//Updating Game
 	updateGame(laby, MoveToPlay, sizeX, sizeY, externTile, activPlayer, passivPlayer);
-	printf("tests (updateGame) : extern tile = %d %d %d %d %d\n", MoveToPlay.tileItem, MoveToPlay.tileN, MoveToPlay.tileE, MoveToPlay.tileS, MoveToPlay.tileW);
-//	printf("result from sendMove = %d",result);
 
 	//Sending Move
-//	printf("sending move\n");
 	int result = sendMove(&MoveToPlay);
-	printf("tests (send move) : extern tile = %d %d %d %d %d\n", MoveToPlay.tileItem, MoveToPlay.tileN, MoveToPlay.tileE, MoveToPlay.tileS, MoveToPlay.tileW);
-//	printf("result from sendMove = %d",result);
 
 	//Gestion du réusltat :
 		//TO DO
@@ -730,9 +675,8 @@ int playMoveV2(tile *laby, int sizeX, int sizeY, tile * externTile, t_player * a
 	externTile->tileS = MoveToPlay.tileS;
 	externTile->tileW = MoveToPlay.tileW;
 	activPlayer->item = MoveToPlay.nextItem;
-	printf("tests (end) : extern tile = %d %d %d %d %d\n", externTile->tileItem, externTile->tileN, externTile->tileE, externTile->tileS, externTile->tileW);
 
-	return 0;
+	return result;
 }
 
 int main(void)
@@ -748,7 +692,7 @@ int main(void)
 	char name[50] = "test";
 
 	printf("waiting for labyrinth :");
-	waitForLabyrinth("TRAINING DONTMOVE timeout=600 seed=177012 start=0", name, &sizeX, &sizeY);
+	waitForLabyrinth("TRAINING RANDOM start=1 timeout=11", name, &sizeX, &sizeY);	//DONTMOVE 
 	printf(" success\n");
 	printf("name is %s\n", name);
 	int LabyrinthReceivedTab[5 * sizeX * sizeY];
@@ -789,7 +733,6 @@ int main(void)
 
 	//initializing labyrinth
 	tile Laby[sizeY*sizeX];
-//	int lenLaby = sizeX*sizeY;
 
 	for (int i = 0; i < sizeX*sizeY; i++)
 	{
@@ -803,65 +746,32 @@ int main(void)
 		printLabyrinth();
 		if (turn == 0)			//player turn
 		{
-//			printf("our turn, launching PlayMove\n");
-//			int playMoveResult = PlayMove(Laby, &victor, xdest, ydest, sizeX, sizeY, &extern_tile, &opponent);
-			printf("tests (playMoveV2 begin) : extern tile = %d %d %d %d %d\n", extern_tile.tileItem, extern_tile.tileN, extern_tile.tileE, extern_tile.tileS, extern_tile.tileW);
 			int result = playMoveV2(Laby, sizeX, sizeY, &extern_tile, &victor, &opponent, ennemy_move);
-			printf("tests (playMoveV2 end) : extern tile = %d %d %d %d %d\n", extern_tile.tileItem, extern_tile.tileN, extern_tile.tileE, extern_tile.tileS, extern_tile.tileW);
 
-//			if(playMoveResult == -1)
-//			{
-//				goto fin;
-//			}
+			if(result != 0)
+			{
+				printf("disconnecting from server\n");
+				closeConnection();
+			}
 
 			turn = 1;
 		}
 		else					//opponent turn
 		{
-			printf("tests (getmove begin) : extern tile = %d %d %d %d %d\n", extern_tile.tileItem, extern_tile.tileN, extern_tile.tileE, extern_tile.tileS, extern_tile.tileW);
 			int ennemyMoveResult = getMove(&ennemy_move);
-			printf("tests (getmove end) : extern tile = %d %d %d %d %d\n", extern_tile.tileItem, extern_tile.tileN, extern_tile.tileE, extern_tile.tileS, extern_tile.tileW);
-//useless ? :
-//			extern_tile.tileItem = ennemy_move.tileItem;
-//			extern_tile.tileN = ennemy_move.tileN;
-//			extern_tile.tileE = ennemy_move.tileE;
-//			extern_tile.tileS = ennemy_move.tileS;
-//			extern_tile.tileW = ennemy_move.tileW;
-//			opponent.item = ennemy_move.nextItem;
-//			printf("tests (modify values) : extern tile = %d %d %d %d %d\n", extern_tile.tileItem, extern_tile.tileN, extern_tile.tileE, extern_tile.tileS, extern_tile.tileW);
 
 			updateGame(Laby, ennemy_move, sizeX, sizeY, &extern_tile, &opponent, &victor);
-			printf("tests (update end) : extern tile = %d %d %d %d %d\n", extern_tile.tileItem, extern_tile.tileN, extern_tile.tileE, extern_tile.tileS, extern_tile.tileW);
 
-
-			if(ennemyMoveResult==0){
-				printf("normal opponent move\n");
+			if(ennemyMoveResult != 0){
+				printf("disconnecting from server\n");
+				closeConnection();
 			}
 			turn = 0;
 		}
 	}
-	fin:
+
 	//disconnecting from server
 	printf("disconnecting from server\n");
 	closeConnection();
-
-
-	printf("\n%d\n",extern_tile.tileN);
-	printf("\n%d\n",extern_tile.tileE);
-	printf("\n%d\n",extern_tile.tileS);
-	printf("\n%d\n",extern_tile.tileW);
-	printf("\n%d\n",extern_tile.tileItem);	
-
 	return 1;
 }
-
-
-
-
-/*
-Strategy
-if win in 1 :
-	test for most disadventagous move for opponent
-else :
-	search path to closest to goal while disadventagous move for opponent
-*/
