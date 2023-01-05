@@ -160,10 +160,10 @@ void updateGame(tile *laby, t_move move, int sizeX, int sizeY, tile *extern_tile
 }
 
 //Function updates the labyrinth (laby) with the move represented by the parameters
-void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int sizeY, tile extern_tile, t_player *activePlayer, t_player *passivePlayer)
+void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int sizeY, tile * extern_tile, t_player *activePlayer, t_player *passivePlayer)
 {
 	//rotating the extern tile
-	rotateTile(&extern_tile, rotation);
+	rotateTile(extern_tile, rotation);
 
 	//moving the tiles
 	switch (insert)
@@ -183,7 +183,7 @@ void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int
 			copyTileContent(&laby[i], laby[i-1]);
 		}
 		//adding the previous extern tile to board
-		copyTileContent(&laby[f2Dto1D(0, number, sizeX)], extern_tile);
+		copyTileContent(&laby[f2Dto1D(0, number, sizeX)], *extern_tile);
 		break;
 
 	case 1 :													//insert line right
@@ -201,7 +201,7 @@ void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int
 			copyTileContent(&laby[i], laby[i+1]);
 		}
 		//adding the previous extern tile to board
-		copyTileContent(&laby[f2Dto1D(sizeX - 1, number, sizeX)], extern_tile);
+		copyTileContent(&laby[f2Dto1D(sizeX - 1, number, sizeX)], *extern_tile);
 		break;	
 	case 2 :													//insert column top
 		if (activePlayer->x == number)							//test if the active player is on the column
@@ -218,7 +218,7 @@ void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int
 			copyTileContent(&laby[i], laby[i - sizeX]);
 		}
 		//adding the previous extern tile to board
-		copyTileContent(&laby[f2Dto1D(number, 0, sizeX)], extern_tile);
+		copyTileContent(&laby[f2Dto1D(number, 0, sizeX)], *extern_tile);
 		break;
 	case 3 :													//insert column bottom
 		if (activePlayer->x == number)							//test if the active player is on the column
@@ -235,7 +235,7 @@ void updateLaby(tile *laby, int insert, int number, int rotation, int sizeX, int
 			copyTileContent(&laby[i], laby[i + sizeX]);
 		}
 		//adding the previous extern tile to board
-		copyTileContent(&laby[f2Dto1D(number, sizeY - 1, sizeX)], extern_tile);
+		copyTileContent(&laby[f2Dto1D(number, sizeY - 1, sizeX)], *extern_tile);
 		break;
 	default:												//Should never happen
 		printf("move insert value impossible !!!!!\n");
@@ -583,6 +583,7 @@ t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_playe
 	//Creating a new board with the contents of laby
 	tile nLaby[sizeY*sizeX];
 	cpyBoard(nLaby, laby, sizeX, sizeY);
+	tile cExternTile = externTile;
 
 	t_possibleMove bestMove = {.activPlayerDist = 999};		//declared with an impossibly high best distance found to be replaced at first iteration
 	t_possibleMove cMove;									//current move being tested
@@ -592,7 +593,7 @@ t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_playe
 	t_player currentActivPlayer = activPlayer;
 	t_player currentPassivPlayer = passivPlayer;
 
-	printf("FindBestMoveV1 Loops starting :\n");
+//	printf("FindBestMoveV1 Loops starting :\n");
 	for (int i = 0; i < 4; i++)							//Insert
 	{
 //		printf("InsertLoop : %d\n",i);
@@ -612,37 +613,37 @@ t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_playe
 					moveToTest.number = n;
 
 					//test if cMove is the opposite of previous move
-//					if (!( (n == previous_move.number) && ( ((i == 0) && (previous_move.insert == 1)) || ((i == 1) && (previous_move.insert == 0)) || ((i == 2) && (previous_move.insert == 3)) || ((i == 3) && (previous_move.insert == 2)) ) ))
-//					{
+					if (!( (n == previous_move.number) && ( ((i == 0) && (previous_move.insert == 1)) || ((i == 1) && (previous_move.insert == 0)) || ((i == 2) && (previous_move.insert == 3)) || ((i == 3) && (previous_move.insert == 2)) ) ))
+					{
 						//modify nLaby with tested move
-						updateLaby(nLaby, i, n, r, sizeX, sizeY, externTile, &currentActivPlayer, &currentPassivPlayer);
+						updateLaby(nLaby, i, n, r, sizeX, sizeY, &cExternTile, &currentActivPlayer, &currentPassivPlayer);
 
 						//find position of new goal, only enters if goal is found on the board
-						if(findCoordsGoal(nLaby, sizeX, sizeY, activPlayer.item, &currentGoalX, &currentGoalY, externTile))
+						if(findCoordsGoal(nLaby, sizeX, sizeY, activPlayer.item, &currentGoalX, &currentGoalY, cExternTile))
 						{
 //							printf("goal pos : %d, %d\n", currentGoalX, currentGoalY);
 							cMove.activPlayerDist = testPathPlayerToGoalV2(nLaby, currentActivPlayer.x, currentActivPlayer.y, currentGoalX, currentGoalY, &cMove.activPlayerX, &cMove.activPlayerY, sizeX, sizeY);
 						}
 
-						printf("testPathPlayerToGoalV2 : dist = %d\n", cMove.activPlayerDist);
+//						printf("testPathPlayerToGoalV2 : dist = %d\n", cMove.activPlayerDist);
 
 
 						//test if current move better than best move found so far :
 						if (cMove.activPlayerDist < bestMove.activPlayerDist)
 						{
-							printf("\nnew best move found\n\n");
+//							printf("\nnew best move found\n\n");
 							bestMove = cMove;
-							printf("insert = %d\nnumber = %d\nrotation = %d\nx = %d\ny = %d\ndist = %d\n", cMove.insert, cMove.number, cMove.rotation, cMove.activPlayerX, cMove.activPlayerY, cMove.activPlayerDist);
+//							printf("insert = %d\nnumber = %d\nrotation = %d\nx = %d\ny = %d\ndist = %d\n", cMove.insert, cMove.number, cMove.rotation, cMove.activPlayerX, cMove.activPlayerY, cMove.activPlayerDist);
 
 						}
-//					}
+					}
 
 					//Reset the labyrinth :
 					cpyBoard(nLaby, laby, sizeX, sizeY);
 					currentActivPlayer = activPlayer;
 					currentPassivPlayer = passivPlayer;
 					cMove.activPlayerDist = 999;
-//					printf("reset complete\n");
+					cExternTile = externTile;
 				}
 			}
 			else
@@ -654,39 +655,44 @@ t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_playe
 					moveToTest.number = n;
 
 					//test if cMove is the opposite of previous move
-//					if (!( (n == previous_move.number) && ( ((i == 0) && (previous_move.insert == 1)) || ((i == 1) && (previous_move.insert == 0)) || ((i == 2) && (previous_move.insert == 3)) || ((i == 3) && (previous_move.insert == 2)) ) ))
-//					{
+					if (!( (n == previous_move.number) && ( ((i == 0) && (previous_move.insert == 1)) || ((i == 1) && (previous_move.insert == 0)) || ((i == 2) && (previous_move.insert == 3)) || ((i == 3) && (previous_move.insert == 2)) ) ))
+					{
 						//modify nLaby with tested move
-						updateLaby(nLaby, i, n, r, sizeX, sizeY, externTile, &currentActivPlayer, &currentPassivPlayer);
+						updateLaby(nLaby, i, n, r, sizeX, sizeY, &cExternTile, &currentActivPlayer, &currentPassivPlayer);
 
 						//find position of new goal, only enters if goal is found on the board
-						if(findCoordsGoal(nLaby, sizeX, sizeY, activPlayer.item, &currentGoalX, &currentGoalY, externTile))
+						if(findCoordsGoal(nLaby, sizeX, sizeY, activPlayer.item, &currentGoalX, &currentGoalY, cExternTile))
 						{
+//							printf("goal pos : %d, %d\n", currentGoalX, currentGoalY);
 							cMove.activPlayerDist = testPathPlayerToGoalV2(nLaby, currentActivPlayer.x, currentActivPlayer.y, currentGoalX, currentGoalY, &cMove.activPlayerX, &cMove.activPlayerY, sizeX, sizeY);
 						}
 
-						printf("testPathPlayerToGoalV2 : dist = %d\n", cMove.activPlayerDist);
+//						printf("testPathPlayerToGoalV2 : dist = %d\n", cMove.activPlayerDist);
+
 
 						//test if current move better than best move found so far :
 						if (cMove.activPlayerDist < bestMove.activPlayerDist)
 						{
-							printf("\nnew best move found\n\n");
+//							printf("\nnew best move found\n\n");
 							bestMove = cMove;
-							printf("insert = %d\nnumber = %d\nrotation = %d\nx = %d\ny = %d\ndist = %d\n", cMove.insert, cMove.number, cMove.rotation, cMove.activPlayerX, cMove.activPlayerY, cMove.activPlayerDist);
+//							printf("insert = %d\nnumber = %d\nrotation = %d\nx = %d\ny = %d\ndist = %d\n", cMove.insert, cMove.number, cMove.rotation, cMove.activPlayerX, cMove.activPlayerY, cMove.activPlayerDist);
+
 						}
-//					}
+					}
+
 					//Reset the labyrinth :
 					cpyBoard(nLaby, laby, sizeX, sizeY);
 					currentActivPlayer = activPlayer;
 					currentPassivPlayer = passivPlayer;
 					cMove.activPlayerDist = 999;
+					cExternTile = externTile;
 				}
-			}			
+			}
 		}
 	}
 	
 	//translating bestMove into an actual t_move
-	t_move returnMove = {.insert = bestMove.insert, .number = bestMove.number, .rotation = bestMove.rotation, .x = bestMove.activPlayerX, .y = bestMove.activPlayerY};	//extern tile not done, same with goal
+	t_move returnMove = {.insert = bestMove.insert, .number = bestMove.number, .rotation = bestMove.rotation, .x = bestMove.activPlayerX, .y = bestMove.activPlayerY, .tileItem = externTile.tileItem, .tileN = externTile.tileN, .tileE = externTile.tileE, .tileS = externTile.tileS, .tileW = externTile.tileW};	//extern tile is the same as the initial one, same with goal
 
 			//DOES NOT RETURN THE CORRECT tileN, tileE, tileS, tileW, tileItem, nextItem
 	return returnMove;
@@ -695,26 +701,37 @@ t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_playe
 //
 int playMoveV2(tile *laby, int sizeX, int sizeY, tile * externTile, t_player * activPlayer, t_player * passivPlayer, t_move previous_move)
 {
+
+	printf("tests (playMoveV2) : extern tile = %d %d %d %d %d\n", externTile->tileItem, externTile->tileN, externTile->tileE, externTile->tileS, externTile->tileW);
 	t_move MoveToPlay;
-	printf("finding best move...\n");
+//	printf("finding best move...\n");
 	MoveToPlay = findBestMoveV1(laby, sizeX, sizeY, *externTile, *activPlayer, *passivPlayer, previous_move);
-	printf("Move found :\ninsert type : %d\nnumber : %d\nrotation : %d\nx : %d\ny : %d",MoveToPlay.insert, MoveToPlay.number, MoveToPlay.rotation, MoveToPlay.x, MoveToPlay.y);
+	printf("Move found :\ninsert type : %d\nnumber : %d\nrotation : %d\nx : %d\ny : %d\n\n",MoveToPlay.insert, MoveToPlay.number, MoveToPlay.rotation, MoveToPlay.x, MoveToPlay.y);
 
+	printf("tests (findBestMoveV1) : extern tile = %d %d %d %d %d\n", externTile->tileItem, externTile->tileN, externTile->tileE, externTile->tileS, externTile->tileW);
 	printf("tests (findBestMoveV1) : extern tile = %d %d %d %d %d\n", MoveToPlay.tileItem, MoveToPlay.tileN, MoveToPlay.tileE, MoveToPlay.tileS, MoveToPlay.tileW);
-
-	//Sending Move
-	printf("sending move\n");
-	int result = sendMove(&MoveToPlay);
-	printf("tests (send move) : extern tile = %d %d %d %d %d\n", MoveToPlay.tileItem, MoveToPlay.tileN, MoveToPlay.tileE, MoveToPlay.tileS, MoveToPlay.tileW);
-	printf("result from sendMove = %d",result);
 
 	//Updating Game
 	updateGame(laby, MoveToPlay, sizeX, sizeY, externTile, activPlayer, passivPlayer);
 	printf("tests (updateGame) : extern tile = %d %d %d %d %d\n", MoveToPlay.tileItem, MoveToPlay.tileN, MoveToPlay.tileE, MoveToPlay.tileS, MoveToPlay.tileW);
-	printf("result from sendMove = %d",result);
+//	printf("result from sendMove = %d",result);
+
+	//Sending Move
+//	printf("sending move\n");
+	int result = sendMove(&MoveToPlay);
+	printf("tests (send move) : extern tile = %d %d %d %d %d\n", MoveToPlay.tileItem, MoveToPlay.tileN, MoveToPlay.tileE, MoveToPlay.tileS, MoveToPlay.tileW);
+//	printf("result from sendMove = %d",result);
 
 	//Gestion du réusltat :
 		//TO DO
+	externTile->tileItem = MoveToPlay.tileItem;
+	externTile->tileN = MoveToPlay.tileN;
+	externTile->tileE = MoveToPlay.tileE;
+	externTile->tileS = MoveToPlay.tileS;
+	externTile->tileW = MoveToPlay.tileW;
+	activPlayer->item = MoveToPlay.nextItem;
+	printf("tests (end) : extern tile = %d %d %d %d %d\n", externTile->tileItem, externTile->tileN, externTile->tileE, externTile->tileS, externTile->tileW);
+
 	return 0;
 }
 
@@ -722,7 +739,7 @@ int main(void)
 {
 	//connection to server
 	printf("connection to server :");
-	connectToServer("172.105.76.204", 5678, "VFtest");
+	connectToServer("172.105.76.204", 5678, "test");
 	printf(" success\n");
 
 	int sizeX;		//labyrinth size
@@ -731,7 +748,7 @@ int main(void)
 	char name[50] = "test";
 
 	printf("waiting for labyrinth :");
-	waitForLabyrinth("TRAINING DONTMOVE timeout=600 seed=177013 start=0", name, &sizeX, &sizeY);
+	waitForLabyrinth("TRAINING DONTMOVE timeout=600 seed=177012 start=0", name, &sizeX, &sizeY);
 	printf(" success\n");
 	printf("name is %s\n", name);
 	int LabyrinthReceivedTab[5 * sizeX * sizeY];
@@ -779,14 +796,6 @@ int main(void)
 		tile tileToAdd = {.x = i%sizeX, .y = i/sizeX, .tileN = LabyrinthReceivedTab[i*5+0], .tileE = LabyrinthReceivedTab[i*5+1], .tileS = LabyrinthReceivedTab[i*5+2], .tileW = LabyrinthReceivedTab[i*5+3], .tileItem = LabyrinthReceivedTab[i*5+4]};
 		Laby[i] = tileToAdd;
 	}
-// testing:
-	printf("tile %d;%d is %d %d %d %d %d\n",Laby[0].x,Laby[0].y,Laby[0].tileN,Laby[0].tileE,Laby[0].tileS,Laby[0].tileW,Laby[0].tileItem);	//(0;0)
-	printf("tile %d;%d is %d %d %d %d %d\n",Laby[1].x,Laby[1].y,Laby[1].tileN,Laby[1].tileE,Laby[1].tileS,Laby[1].tileW,Laby[1].tileItem);	//(1;0)
-	printf("tile %d;%d is %d %d %d %d %d\n",Laby[sizeX].x,Laby[sizeX].y,Laby[sizeX].tileN,Laby[sizeX].tileE,Laby[sizeX].tileS,Laby[sizeX].tileW,Laby[sizeX].tileItem);	//(0;1)
-	printf("tile %d;%d is %d %d %d %d %d\n",Laby[sizeX+1].x,Laby[sizeX+1].y,Laby[sizeX+1].tileN,Laby[sizeX+1].tileE,Laby[sizeX+1].tileS,Laby[sizeX+1].tileW,Laby[sizeX+1].tileItem);	//(1;1)
-	printf("tile %d;%d is %d %d %d %d %d\n",Laby[(sizeY-1)*sizeX].x,Laby[(sizeY-1)*sizeX].y,Laby[(sizeY-1)*sizeX].tileN,Laby[(sizeY-1)*sizeX].tileE,Laby[(sizeY-1)*sizeX].tileS,Laby[(sizeY-1)*sizeX].tileW,Laby[(sizeY-1)*sizeX].tileItem);	//(0;sizeY-1)
-	printf("tile %d;%d is %d %d %d %d %d\n",Laby[sizeX-1].x,Laby[sizeX-1].y,Laby[sizeX-1].tileN,Laby[sizeX-1].tileE,Laby[sizeX-1].tileS,Laby[sizeX-1].tileW,Laby[sizeX-1].tileItem);	//(1;1)
-	printf("tile %d;%d is %d %d %d %d %d\n",Laby[(sizeY-1)*sizeX+(sizeX-1)].x,Laby[(sizeY-1)*sizeX+(sizeX-1)].y,Laby[(sizeY-1)*sizeX+(sizeX-1)].tileN,Laby[(sizeY-1)*sizeX+(sizeX-1)].tileE,Laby[(sizeY-1)*sizeX+(sizeX-1)].tileS,Laby[(sizeY-1)*sizeX+(sizeX-1)].tileW,Laby[(sizeY-1)*sizeX+(sizeX-1)].tileItem);	//(0;sizeY-1)
 
 	//start game
 	while (1)
@@ -794,13 +803,11 @@ int main(void)
 		printLabyrinth();
 		if (turn == 0)			//player turn
 		{
-//			int xdest = 7;
-//			int ydest = 7;
-//			printf("goal coords :\t");
-//			scanf("%d%d",&xdest,&ydest);
 //			printf("our turn, launching PlayMove\n");
 //			int playMoveResult = PlayMove(Laby, &victor, xdest, ydest, sizeX, sizeY, &extern_tile, &opponent);
+			printf("tests (playMoveV2 begin) : extern tile = %d %d %d %d %d\n", extern_tile.tileItem, extern_tile.tileN, extern_tile.tileE, extern_tile.tileS, extern_tile.tileW);
 			int result = playMoveV2(Laby, sizeX, sizeY, &extern_tile, &victor, &opponent, ennemy_move);
+			printf("tests (playMoveV2 end) : extern tile = %d %d %d %d %d\n", extern_tile.tileItem, extern_tile.tileN, extern_tile.tileE, extern_tile.tileS, extern_tile.tileW);
 
 //			if(playMoveResult == -1)
 //			{
@@ -811,9 +818,22 @@ int main(void)
 		}
 		else					//opponent turn
 		{
-			
+			printf("tests (getmove begin) : extern tile = %d %d %d %d %d\n", extern_tile.tileItem, extern_tile.tileN, extern_tile.tileE, extern_tile.tileS, extern_tile.tileW);
 			int ennemyMoveResult = getMove(&ennemy_move);
+			printf("tests (getmove end) : extern tile = %d %d %d %d %d\n", extern_tile.tileItem, extern_tile.tileN, extern_tile.tileE, extern_tile.tileS, extern_tile.tileW);
+//useless ? :
+//			extern_tile.tileItem = ennemy_move.tileItem;
+//			extern_tile.tileN = ennemy_move.tileN;
+//			extern_tile.tileE = ennemy_move.tileE;
+//			extern_tile.tileS = ennemy_move.tileS;
+//			extern_tile.tileW = ennemy_move.tileW;
+//			opponent.item = ennemy_move.nextItem;
+//			printf("tests (modify values) : extern tile = %d %d %d %d %d\n", extern_tile.tileItem, extern_tile.tileN, extern_tile.tileE, extern_tile.tileS, extern_tile.tileW);
+
 			updateGame(Laby, ennemy_move, sizeX, sizeY, &extern_tile, &opponent, &victor);
+			printf("tests (update end) : extern tile = %d %d %d %d %d\n", extern_tile.tileItem, extern_tile.tileN, extern_tile.tileE, extern_tile.tileS, extern_tile.tileW);
+
+
 			if(ennemyMoveResult==0){
 				printf("normal opponent move\n");
 			}
