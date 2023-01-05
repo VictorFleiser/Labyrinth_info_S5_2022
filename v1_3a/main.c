@@ -285,113 +285,6 @@ void recursivelyMarkSteps(tile *laby, int tileX, int tileY, int gx, int gy, int 
 }
 
 
-//FUNCTION NO LONGER USED
-
-//function recursively adds the direction values to the path array based on the steps array to go from the player (step = 0) to the current tile (tileX ; tileY) (normally the goal tile on the first iteration)
-//tileX and tileY are the coordinates of the current tile to test
-//sizeX and sizeY are the dimensions of the labyrinth
-//steps is a pointer to an array of the steps for all tiles 
-//currentStep is the step of the current tile (could have also been found from the steps array)
-//maxSteps is the highest step (the step of the goal)
-//path is an array with the directions to go from the player to the goal (N = 0, E = 1, S = 2, W = 3)
-void recursivelyAddPathValuesFromSteps(int tileX, int tileY, int sizeX, int sizeY, int *steps, int currentStep, int maxStep, int *path)
-{
-	printf("launched recursivelyAddPathValuesFromSteps\n");
-	if (currentStep != 0)
-	{
-		//recursively try north path :
-		if (0 <= tileY - 1)	//test if north tile exists
-		{
-			if (steps[(tileY-1)*sizeX+tileX] == currentStep - 1)	//test if the north tile is the previous tile in the path
-			{
-				path[maxStep - currentStep + 1] = 2;		//add south direction value to path
-				return recursivelyAddPathValuesFromSteps(tileX, tileY - 1, sizeX, sizeY, steps, currentStep - 1, maxStep, path);
-			}
-		}
-		//recursively try east path :
-		if (sizeX > tileX + 1)	//test if east tile exists
-		{
-			if (steps[tileY*sizeX+tileX+1] == currentStep - 1)	//test if the east tile is the previous tile in the path
-			{
-				path[maxStep - currentStep + 1] = 3;		//add west direction value to path
-				return recursivelyAddPathValuesFromSteps(tileX + 1, tileY, sizeX, sizeY, steps, currentStep - 1, maxStep, path);
-			}
-		}
-		//recursively try south path :
-		if (sizeY > tileY + 1)	//test if south tile exists
-		{
-			if (steps[(tileY+1)*sizeX+tileX] == currentStep - 1)	//test if the south tile is the previous tile in the path
-			{
-				path[maxStep - currentStep + 1] = 0;		//add north direction value to path
-				return recursivelyAddPathValuesFromSteps(tileX, tileY + 1, sizeX, sizeY, steps, currentStep - 1, maxStep, path);
-			}
-		}
-		//recursively try west path :
-		if (0 <= tileX - 1)	//test if west tile exists
-		{
-			if (steps[tileY*sizeX+tileX-1] == currentStep - 1)	//test if the west tile is the previous tile in the path
-			{
-				path[maxStep - currentStep + 1] = 1;		//add east direction value to path
-				return recursivelyAddPathValuesFromSteps(tileX - 1, tileY, sizeX, sizeY, steps, currentStep - 1, maxStep, path);
-			}
-		}
-	}
-}
-
-/*		FUNCTION NO LONGER USED
-Function to test if a path is available From Player to current goal
-If not : returns null adress?
-If yes : allocates an array with the moves of the first path found, array starts with the array's length : returns the adress of the array
-in returned path array : 0 = North, East = 1, South = 2, West = 3
-Arg:
-*laby = labyrinth adress
-px and py = player x and player y coordinates
-gx and gy = goal x and goal y coordinates
-sizeX and sizeY are the dimensions of the labyrinth
-*/
-int* testPathPlayerToGoal(tile * laby, int px, int py, int gx, int gy, int sizeX, int sizeY)
-{
-	printf("launched testPathPlayerGoal\n");
-	//creation of an array with the number of steps distance from player, initialize all values at 0
-	int steps[sizeY*sizeX];
-	for (int i = 0; i < sizeX*sizeY; i++)
-	{
-		steps[i] = -1;
-	}
-
-	steps[py*sizeX + px] = 0;
-	printf("launching recursivelyMarkSteps\n");
-	//mark recursively steps :
-	recursivelyMarkSteps(laby, px, py, gx, gy, sizeX, sizeY, steps, 0);
-	printf("recursivelyMarkSteps exited\n");
-
-	printf("steps array :\n");
-	for (int i = 0; i < sizeY; i++)
-	{
-		for (int j = 0; j < sizeX; j++)
-		{
-			printf("%d ",steps[f2Dto1D(j, i, sizeX)]);
-		}
-		printf("\n");
-	}
-
-	// if no path has been found :
-	if (steps[gy*sizeX + gx] == -1)
-	{
-		return NULL;
-	}
-	
-	//allocate path array :
-	int* path = malloc( (sizeof(int)) * (steps[gy*sizeX + gx] + 1) );	//allocate an array of size = number of steps to goal + 1
-	path[0] = steps[gy*sizeX + gx] + 1;	//first element value is the size of the array
-
-	printf("launching recursivelyAddPathValuesFromSteps\n");
-	//get recursively path values from steps array to path array :
-	recursivelyAddPathValuesFromSteps(gx, gy, sizeX, sizeY, steps, steps[gy*sizeX + gx], steps[gy*sizeX + gx], path);
-	printf("recursivelyAddPathValuesFromSteps exited\n");
-	return path;
-}
-
 //returns the distance between 2 tiles (diagonals count as 2)
 int calcDist(int px, int py, int gx, int gy)
 {
@@ -475,43 +368,6 @@ int testPathPlayerToGoalV2(tile * laby, int px, int py, int gx, int gy, int *des
 	return bestDistanceFound;
 }
 
-//FUNCTION NO LONGER USED (see PlayMoveV2 for new version)
-int PlayMove(tile *laby, t_player *victor, int gx, int gy, int sizeX, int sizeY, tile *extern_tile, t_player *opponent)
-{
-	printf("PlayMove launched\n");
-	int result;
-/*	printf("launching testPathPlayerGoal\n");		//tempo comment
-	int* path = testPathPlayerToGoal(laby, victor->x, victor->y, gx, gy, sizeX, sizeY);
-	printf("testPathPlayerGoal exited\n");*/
-//	if (path != NULL)		//not final yet, just for testing
-//	{
-//		move = {.insert = 0, .number = 7, .rotation = 3, .x = 0, .y = 0, .tileN = 1, .tileE = 0, .tileS = 0, .tileW = 0, .nextItem = 2};
-//	}
-/*	free(path);*/				//tempo commetn
-	printf("insert type :\t");
-	int insert;
-	scanf("%d",&insert);
-	printf("lign/column value :\t");
-	int lign;
-	scanf("%d",&lign);
-	printf("rotation :\t");
-	int rot;
-	scanf("%d",&rot);
-
-	t_move move = {.insert = insert, .number = lign, .rotation = rot, .x = gx, .y = gy, .tileN = 1, .tileE = 0, .tileS = 0, .tileW = 0, .nextItem = 1};
-	int posx = victor->x;
-	int posy = victor->y;
-	updateGame(laby, move, sizeX, sizeY, extern_tile, victor, opponent);
-
-	printf("launching testPathPlayerGoal\n");	//tempo
-	int* path = testPathPlayerToGoal(laby, posx, posy, gx, gy, sizeX, sizeY);
-	printf("testPathPlayerGoal exited\n");
-	free(path);
-	result = sendMove(&move);
-	printf("%d\n",result);
-	return result;
-}
-
 //Struct saving the move currently tested
 typedef struct
 {
@@ -549,7 +405,7 @@ int findCoordsGoal(tile *laby, int sizeX, int sizeY, int goal, int *xGoal, int *
 	{
 		return 0;
 	}	
-	printf("\nERROR : goal not found!!! (returning the same as if goal on extern tile)\n");
+//	printf("\nERROR : goal not found!!! (returning the same as if goal on extern tile)\n");
 	return 0;
 }
 
@@ -692,7 +548,7 @@ int main(void)
 	char name[50] = "test";
 
 	printf("waiting for labyrinth :");
-	waitForLabyrinth("TRAINING RANDOM start=1 timeout=10", name, &sizeX, &sizeY);	//DONTMOVE 
+	waitForLabyrinth("TRAINING RANDOM seed=42 start=0 timeout=10", name, &sizeX, &sizeY);	//DONTMOVE 
 	printf(" success\n");
 	printf("name is %s\n", name);
 	int LabyrinthReceivedTab[5 * sizeX * sizeY];
