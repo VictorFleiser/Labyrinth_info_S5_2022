@@ -417,8 +417,8 @@ t_move findBestMoveV1(tile *laby, int sizeX, int sizeY, tile externTile, t_playe
 	cpyBoard(nLaby, laby, sizeX, sizeY);
 	tile cExternTile = externTile;
 
-	t_possibleMove bestMove = {.activPlayerDist = 999};		//declared with an impossibly high best distance found to be replaced at first iteration
-	t_possibleMove cMove;									//current move being tested
+	t_possibleMove bestMove = {.activPlayerX = activPlayer.x, .activPlayerY = activPlayer.y , .activPlayerDist = 999};		//declared with an impossibly high best distance found to be replaced at first iteration
+	t_possibleMove cMove = {.activPlayerX = activPlayer.x, .activPlayerY = activPlayer.y, .activPlayerDist = 100};	//current move being tested (default goal = player pos)
 	t_move moveToTest = {.tileItem = externTile.tileItem, .tileN = externTile.tileN, .tileE = externTile.tileE, .tileS = externTile.tileS, .tileW = externTile.tileW};
 	int currentGoalX = activPlayer.x;
 	int currentGoalY = activPlayer.y;
@@ -548,7 +548,7 @@ int main(void)
 	char name[50] = "test";
 
 	printf("waiting for labyrinth :");
-	waitForLabyrinth("TRAINING RANDOM seed=42 start=0 timeout=10", name, &sizeX, &sizeY);	//DONTMOVE 
+	waitForLabyrinth("TRAINING RANDOM timeout=10", name, &sizeX, &sizeY);	//DONTMOVE  optional parameter :    seed=0xf11354	 start=0
 	printf(" success\n");
 	printf("name is %s\n", name);
 	int LabyrinthReceivedTab[5 * sizeX * sizeY];
@@ -596,10 +596,13 @@ int main(void)
 		Laby[i] = tileToAdd;
 	}
 
+	int nbTurns = 0;
+
 	//start game
 	while (1)
 	{
-		printLabyrinth();
+		nbTurns++;
+//		printLabyrinth();
 		if (turn == 0)			//player turn
 		{
 			int result = playMoveV2(Laby, sizeX, sizeY, &extern_tile, &victor, &opponent, ennemy_move);
@@ -607,6 +610,7 @@ int main(void)
 			if(result != 0)
 			{
 				printf("disconnecting from server\n");
+				printf("number of turns : %d\n", nbTurns);
 				closeConnection();
 				return 1;
 			}
@@ -621,6 +625,7 @@ int main(void)
 
 			if(ennemyMoveResult != 0){
 				printf("disconnecting from server\n");
+				printf("number of turns : %d\n", nbTurns);
 				closeConnection();
 				return 1;
 			}
@@ -630,6 +635,7 @@ int main(void)
 
 	//disconnecting from server
 	printf("disconnecting from server\n");
+	printf("number of turns : %d\n", nbTurns);
 	closeConnection();
 	return 1;
 }
